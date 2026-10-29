@@ -1,0 +1,37 @@
+{
+  "name": "Sikshya Global AI | Universal Education for Humanity",
+  "short_name": "Sikshya AI",
+  "description": "Free Universal Education AI under MIT License by Niraj Mallik for students worldwide to help humanity and make human beings happy.",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0A0F1C",
+  "theme_color": "#0A0F1C",
+  "icons": [
+    {
+      "src": "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=192&auto=format&fit=crop",
+      "sizes": "192x192",
+      "type": "image/jpeg",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=512&auto=format&fit=crop",
+      "sizes": "512x512",
+      "type": "image/jpeg",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["education", "books", "productivity"],
+  "shortcuts": [
+    {
+      "name": "AI Coaching",
+      "url": "/#coaching",
+      "description": "Chat with real-time Voice & Vision AI"
+    },
+    {
+      "name": "Problem Solving Group",
+      "url": "/#group",
+      "description": "Collaborate with global peers"
+    }
+  ]
+}
