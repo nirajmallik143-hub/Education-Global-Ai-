@@ -1,0 +1,7 @@
+{
+  "name": "Education AI Global",
+  "description": "An intelligent, multilingual global learning platform providing AI-powered tutoring, adaptive curriculum, interactive STEM & humanities simulations, and accessible education tools worldwide.",
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
