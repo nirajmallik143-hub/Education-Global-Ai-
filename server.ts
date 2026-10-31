@@ -11,6 +11,7 @@ const __dirname = path.dirname(__filename);
 const app = express();
 const PORT = Number(process.env.PORT) || 3000;
 const isProduction = process.env.NODE_ENV === 'production';
+const DEFAULT_GEMINI_MODEL = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
 
 app.use(cors());
 app.use(express.json());
@@ -32,6 +33,12 @@ if (apiKey) {
   } catch (err) {
     console.error('Failed to initialize GoogleGenAI client:', err);
   }
+} else {
+  console.warn('GEMINI_API_KEY is not set. The app will run in offline fallback mode.');
+}
+
+function getGeminiModelName() {
+  return process.env.GEMINI_MODEL || DEFAULT_GEMINI_MODEL;
 }
 
 // Health check endpoint
@@ -40,6 +47,7 @@ app.get('/api/health', (_req: Request, res: Response) => {
     status: 'ok',
     appName: 'Sikshya Global AI',
     geminiEnabled: Boolean(ai),
+    geminiModel: getGeminiModelName(),
     timestamp: new Date().toISOString(),
   });
 });
@@ -61,9 +69,8 @@ Format equations and key principles step-by-step.`;
 
   if (ai) {
     try {
-      // 3.5-second strict race timeout: returns real Gemini in 1-2s; guarantees student never waits on cloud spikes
       const fetchPromise = ai.models.generateContent({
-        model: 'gemini-3.8-flash',
+        model: getGeminiModelName(),
         contents: query,
         config: {
           systemInstruction: defaultSys,
@@ -105,7 +112,7 @@ Answer concisely for syllabus "${board}" in language code "${language}".`;
   if (ai) {
     try {
       const fetchPromise = ai.models.generateContent({
-        model: 'gemini-3.8-flash',
+        model: getGeminiModelName(),
         contents: query,
         config: { systemInstruction: defaultSys, temperature: 0.6 }
       });
@@ -142,7 +149,7 @@ function getSikshyaFallback(query: string, board: string, lang: string): string 
   if (q.includes('quantum') || q.includes('planck') || q.includes('einstein') || q.includes('formula')) {
     return `**⚛️ Quantum Physics & Core Formulas (${board} Syllabus)**\n\n` +
       `**1. Planck-Einstein Relation:**\n` +
-      `$$E = h \\cdot f = \\frac{h \\cdot c}{\\lambda}$$\n` +
+      `$$E = h \\cdot f = \\frac{h \\cdot c}{\\lambda}$$\n\n` +
       `Where $h = 6.626 \\times 10^{-34} \\text{ J}\\cdot\\text{s}$ (Planck's Constant).\n\n` +
       `**2. De Broglie Wavelength:**\n` +
       `$$\\lambda = \\frac{h}{p} = \\frac{h}{m \\cdot v}$$\n\n` +
@@ -181,7 +188,7 @@ Guidelines:
 4. If math or code is involved, format clearly using markdown or code blocks.`;
 
       const response = await ai.models.generateContent({
-        model: 'gemini-3.8-flash',
+        model: getGeminiModelName(),
         contents: [
           ...history.slice(-6).map((h: { role: string; content: string }) => ({
             role: h.role === 'user' ? 'user' : 'model',
@@ -242,7 +249,7 @@ Format the output strictly as a JSON object adhering to:
 }`;
 
       const response = await ai.models.generateContent({
-        model: 'gemini-3.8-flash',
+        model: getGeminiModelName(),
         contents: prompt,
         config: {
           responseMimeType: 'application/json',
@@ -286,7 +293,7 @@ Provide the response in structured JSON with fields:
 }`;
 
       const response = await ai.models.generateContent({
-        model: 'gemini-3.8-flash',
+        model: getGeminiModelName(),
         contents: prompt,
         config: {
           responseMimeType: 'application/json',
@@ -321,7 +328,7 @@ function generateIntelligentFallback(query: string, subject: string, gradeLevel:
 
   let intro = `Hello! Welcome to Education AI Global. Here is an educational breakdown for you (${gradeLevel} level, ${subject}):`;
   if (language === 'Nepali') {
-    intro = `नमस्ते! एजुकेशन एआई ग्लोबलमा स्वागत छ। तपाईंको प्रश्नको जवाफ यस प्रकार छ (${subject}):`;
+    intro = `नमस्ते! एजुकेशन एआई ग्लोबलमा स्वागत छ। तपाईंको प्रश्नको जवाफ यस प्रकारले हेर्दा ...`;
   } else if (language === 'Arabic') {
     intro = `مرحبًا بك في Education AI Global. إليك الشرح التعليمي المبسط (${subject}):`;
   } else if (language === 'Spanish') {
@@ -339,8 +346,8 @@ function generateIntelligentFallback(query: string, subject: string, gradeLevel:
 \`\`\`
 
 **2. How it works step-by-step:**
-- **Light-Dependent Reactions:** Chlorophyll pigments inside the thylakoid membranes of chloroplasts capture photons of sunlight, splitting water molecules ($H_2O$) and releasing oxygen gas ($O_2$) into our atmosphere.
-- **Calvin Cycle (Light-Independent):** Inside the stroma, carbon dioxide ($CO_2$) molecules are fixed using ATP and NADPH energy into high-energy sugars (glucose), feeding the plant and the entire biosphere!
+- **Light-Dependent Reactions:** Chlorophyll pigments inside the thylakoid membranes of chloroplasts capture photons of sunlight, splitting water molecules ($H_2O$) and releasing oxygen gas ($O_2$).
+- **Calvin Cycle (Light-Independent):** Inside the stroma, carbon dioxide ($CO_2$) molecules are fixed using ATP and NADPH energy into high-energy sugars (glucose), feeding the plant and the entire ecosystem.
 
 **3. Global Importance:**
 Over 50% of the world's oxygen is produced not by land trees, but by marine phytoplankton in our global oceans!
@@ -356,7 +363,7 @@ Over 50% of the world's oxygen is produced not by land trees, but by marine phyt
 ### 🤖 Neural Networks & Modern AI
 
 **1. The Biological Inspiration:**
-Artificial Neural Networks (ANNs) are computational models inspired by biological neurons in the human brain. Each artificial neuron takes multiple numerical inputs, multiplies them by learned weights, sums them with a bias, and passes them through an activation function (like ReLU or Sigmoid):
+Artificial Neural Networks (ANNs) are computational models inspired by biological neurons in the human brain. Each artificial neuron takes multiple numerical inputs, multiplies them by learned weights, sums them, and passes the result through an activation function.
 \`\`\`
 Output = Activation( Σ(Input_i * Weight_i) + Bias )
 \`\`\`
@@ -387,7 +394,7 @@ F = G * (m₁ * m₂) / r²
 - If distance ($r$) doubles, gravitational attraction drops to one-quarter ($1/4$).
 
 **2. General Relativity (Albert Einstein):**
-Einstein revolutionized this in 1915: Mass and energy actually curve spacetime like a bowling ball on a rubber sheet. Objects (and even light) simply follow the shortest path (geodesics) through this curved geometry!
+Einstein revolutionized this in 1915: Mass and energy actually curve spacetime like a bowling ball on a rubber sheet. Objects (and even light) simply follow the shortest path (geodesics) through spacetime.
 
 💡 **Ponder this:**
 - Why do astronauts on the International Space Station feel weightless if gravity at that altitude is still ~90% of Earth's surface gravity? (Hint: They are in perpetual free-fall!).`;
